@@ -6,7 +6,7 @@ I losely based some of the workings on <a href='http://openremote.org/display/fo
 ##Supported Models
  * RX-V371, RX-V373, RX-V375, RX-V377
  * RX-V471, RX-V473, RX-V475, RX-V477
-*  RX-V571, RX-V573, RX-V575, RX-V575
+ * RX-V571, RX-V573, RX-V575, RX-V575
  * RX-V671, RX-V673, RX-V675, RX-V677
  * RX-V771, RX-V773, RX-V775, RX-V777
  * RX-V871, RX-V873, RX-V875, RX-V877
