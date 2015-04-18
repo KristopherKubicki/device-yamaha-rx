@@ -1,6 +1,9 @@
 /**
  *  Yamaha 
- *     Works on RX-V* and some other receivers
+ *     Works on RX-V*
+ *
+ *  
+ *
  *
  *  Loosely based on: https://github.com/BirdAPI/yamaha-network-receivers
  *   and: http://openremote.org/display/forums/Controlling++RX+2065+Yamaha+Amp
@@ -124,14 +127,24 @@ def unmute() {
 
 def inputNext() { 
 
-	for(i in inputChan) { 
-    	log.debug "INPUT $i"
+	def cur = device.currentValue("input")
+    def selectedInputs = ["HDMI1","HDMI2","HDMI5","AV1","HDMI1"]
+    
+    
+    def semaphore = 0
+    for(selectedInput in selectedInputs) {
+    	if(semaphore == 1) { 
+        	return inputSelect(selectedInput)
+        }
+    	if(cur == selectedInput) { 
+        	semaphore = 1
+        }
     }
-    log.debug "CURRENT: $inputChan"
-
 }
 
-def inputSelect(channel) { 
+
+def inputSelect(channel) {
+ 	sendEvent(name: "input", value: channel	)
 	request("<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Input><Input_Sel>$channel</Input_Sel></Input></Main_Zone></YAMAHA_AV>")
 }
 
