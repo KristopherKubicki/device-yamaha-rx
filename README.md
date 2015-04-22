@@ -1,6 +1,8 @@
 # Yamaha RX-V Device Type
 This is a networked receiver device type for SmartThings.  It allows you to change the input, adjust the volume, mute and turn off/standby your receiver via a SmartApp or the SmartThings UI.
 
+<img src='http://www.audiogurus.com/learn/wp-content/uploads/2014/06/Yamaha-RX-A1040-rear-panel.jpg'>
+
 I losely based some of the workings on <a href='http://openremote.org/display/forums/Controlling++RX+2065+Yamaha+Amp'>OpenRemote</a> and <a href='https://github.com/BirdAPI/yamaha-network-receivers'>EventGhost</a>.  However, everything in this implementation works for my receiver, the RX-V675.
 
 ##Supported Models
@@ -18,10 +20,11 @@ I losely based some of the workings on <a href='http://openremote.org/display/fo
  * RX-V3067, RX-V2067, RX-V1067, RX-V867
  * RX-V2065, RX-V3900, DSP-AX3900, RX-Z7, DSP-Z7
  * HTR-7065, HTR-6065, HTR-5065, HTR-4065
- * HTR-6064
- * HTR-9063, HTR-8063, HTR-6295
+ * HTR-6064, HTR-9063, HTR-8063, HTR-6295
  
- I also suspect it could be easily modified for some other recievers. 
+I also suspect it could be easily modified for some other recievers. 
+
+I created a command class for all AV Tuners for SmartThings called "inputSelect".  To use it, just specify the name of the input you wish to tune to.  For example, if you want to tune to "HDMI1", you would just send inputSelect("HDMI1") via your SmartApp.
 
 ##Potential Bugs
 I noticed the XPATH was different for Volume Up / Down between my implementation and OpenRemote's forum post.  They may have implemented it differently, or Yamaha may have changed the command.  
