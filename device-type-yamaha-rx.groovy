@@ -1,9 +1,7 @@
 /**
- *  Yamaha 
+ *  Yamaha Network Receiver
  *     Works on RX-V*
- *
- *  
- *
+ *    SmartThings driver to connect your Yamaha Network Receiver to SmartThings
  *
  *  Loosely based on: https://github.com/BirdAPI/yamaha-network-receivers
  *   and: http://openremote.org/display/forums/Controlling++RX+2065+Yamaha+Amp
@@ -19,6 +17,7 @@ preferences {
 metadata {
 	definition (name: "Yamaha Network Receiver", namespace: "KristopherKubicki", 
     	author: "kristopher@acm.org") {
+        capability "Actuator"
 		capability "Switch" 
         capability "Polling"
         capability "Music Player"
@@ -61,7 +60,7 @@ metadata {
 
 
 def parse(String description) {
-	log.debug "Parsing '${description}'"
+//	log.debug "Parsing '${description}'"
     
  	def map = stringToMap(description)
     if(!map.body) { return }
@@ -89,14 +88,15 @@ def parse(String description) {
 	    sendEvent(name: "mute", value: 'unmuted')
     }
     
-    def volLevel = statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.text()
-    if(volLevel != "") {
-    	sendEvent(name: "level", value: volLevel)
+    
+    if(statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.text()) { 
+    	def volLevel = statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.toBigInteger()
+    	if(volLevel != device.currentValue("level") as Integer) {
+    		sendEvent(name: "level", value: volLevel)
+        }
     }
 
-    log.debug "MATCH: '${volLevel}'"
-    
-
+    //log.debug "MATCH: '${volLevel}'"
 }
 
 // Needs to round to the nearest 5
