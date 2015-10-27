@@ -48,7 +48,7 @@ metadata {
             state "muted", label: '${name}', action:"unmute", backgroundColor: "#79b821", icon:"st.Electronics.electronics13"
             state "unmuted", label: '${name}', action:"mute", backgroundColor: "#ffffff", icon:"st.Electronics.electronics13"
 		}
-        controlTile("level", "device.level", "slider", height: 1, width: 2, inactiveLabel: false, range: "(-800..165)") {
+        controlTile("level", "device.level", "slider", height: 1, width: 2, inactiveLabel: false, range: "(-800..100)") {
 			state "level", label: '${name}', action:"setLevel"
 		}
         
@@ -90,20 +90,32 @@ def parse(String description) {
     
     
     if(statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.text()) { 
-    	def volLevel = statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.toBigInteger()
-    	if(volLevel != device.currentValue("level") as Integer) {
+    	def int volLevel = statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.toInteger() ?: -250
+   		def int curLevel = -250
+        try {
+        	curLevel = device.currentValue("level")
+        } catch(NumberFormatException nfe) { 
+        	curLevel = -250
+        }
+        if(curLevel != volLevel) {
+        	log.debug "VOL: $volLevel"
     		sendEvent(name: "level", value: volLevel)
         }
+        log.debug "MATCH2: '${volLevel}'"
     }
 
-    //log.debug "MATCH: '${volLevel}'"
+ 
 }
 
 // Needs to round to the nearest 5
 def setLevel(val) {
-	val = ((val/5) as Integer) * 5
 	sendEvent(name: "mute", value: "unmuted")
-    sendEvent(name: "level", value: val)    
+      
+log.debug "VAL1: $val "
+    val = ((val/5) as Integer) * 5
+    sendEvent(name: "level", value: val)
+    
+    log.debug "VAL2: $val";
     request("<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Volume><Lvl><Val>$val</Val><Exp>1</Exp><Unit>dB</Unit></Lvl></Volume></Main_Zone></YAMAHA_AV>")
 }
 
@@ -149,10 +161,10 @@ def inputSelect(channel) {
 }
 
 def poll() { 
-	status()
+	refresh()
 }
 
-def status() {
+def refresh() {
     request('<YAMAHA_AV cmd="GET"><Main_Zone><Basic_Status>GetParam</Basic_Status></Main_Zone></YAMAHA_AV>')
 }
 
