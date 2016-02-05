@@ -18,14 +18,19 @@ metadata {
 	definition (name: "Yamaha Network Receiver", namespace: "KristopherKubicki", 
     	author: "kristopher@acm.org") {
         capability "Actuator"
-		capability "Switch" 
+	capability "Switch" 
         capability "Polling"
-        capability "Music Player"
+        capability "Switch Level"
         
+        attribute "mute", "string"
         attribute "input", "string"
+        attribute "inputChan", "enum"
         
-        command "inputSelect"
+        command "mute"
+        command "unmute"
+        command "inputSelect", ["string"]
         command "inputNext"
+        command "toggleMute"
         
       	}
 
@@ -48,7 +53,7 @@ metadata {
             state "muted", label: '${name}', action:"unmute", backgroundColor: "#79b821", icon:"st.Electronics.electronics13"
             state "unmuted", label: '${name}', action:"mute", backgroundColor: "#ffffff", icon:"st.Electronics.electronics13"
 		}
-        controlTile("level", "device.level", "slider", height: 1, width: 2, inactiveLabel: false, range: "(-800..100)") {
+        controlTile("level", "device.level", "slider", height: 1, width: 2, inactiveLabel: false, range: "(0..100)") {
 			state "level", label: '${name}', action:"setLevel"
 		}
         
@@ -60,8 +65,6 @@ metadata {
 
 
 def parse(String description) {
-//	log.debug "Parsing '${description}'"
-    
  	def map = stringToMap(description)
     if(!map.body) { return }
 	def body = new String(map.body.decodeBase64())
@@ -88,43 +91,44 @@ def parse(String description) {
 	    sendEvent(name: "mute", value: 'unmuted')
     }
     
-    
     if(statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.text()) { 
     	def int volLevel = statusrsp.Main_Zone.Basic_Status.Volume.Lvl.Val.toInteger() ?: -250
-   		def int curLevel = -250
+        volLevel = sprintf("%d",(((volLevel + 800) / 9)/5)*5)
+   		def int curLevel = 65
         try {
         	curLevel = device.currentValue("level")
         } catch(NumberFormatException nfe) { 
-        	curLevel = -250
+        	curLevel = 65
         }
         if(curLevel != volLevel) {
-        	log.debug "VOL: $volLevel"
     		sendEvent(name: "level", value: volLevel)
         }
-        log.debug "MATCH2: '${volLevel}'"
     }
-
- 
 }
 
 // Needs to round to the nearest 5
 def setLevel(val) {
-	sendEvent(name: "mute", value: "unmuted")
-      
-log.debug "VAL1: $val "
-    val = ((val/5) as Integer) * 5
+	sendEvent(name: "mute", value: "unmuted")     
     sendEvent(name: "level", value: val)
     
-    log.debug "VAL2: $val";
-    request("<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Volume><Lvl><Val>$val</Val><Exp>1</Exp><Unit>dB</Unit></Lvl></Volume></Main_Zone></YAMAHA_AV>")
+    	def scaledVal = sprintf("%d",val * 9 - 800)
+    	scaledVal = ((scaledVal/5) as Integer) * 5
+    	request("<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Volume><Lvl><Val>$scaledVal</Val><Exp>1</Exp><Unit>dB</Unit></Lvl></Volume></Main_Zone></YAMAHA_AV>")
 }
 
 def on() {
+	sendEvent(name: "switch", value: 'on')
 	request('<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>On</Power></Power_Control></Main_Zone></YAMAHA_AV>')
 }
 
-def off() { 
+def off() {
+	sendEvent(name: "switch", value: 'off')
 	request('<YAMAHA_AV cmd="PUT"><Main_Zone><Power_Control><Power>Standby</Power></Power_Control></Main_Zone></YAMAHA_AV>')
+}
+
+def toggleMute(){
+    if(device.currentValue("mute") == "muted") { unmute() }
+	else { mute() }
 }
 
 def mute() { 
@@ -140,6 +144,7 @@ def unmute() {
 def inputNext() { 
 
 	def cur = device.currentValue("input")
+	// modify your inputs right here! 
     def selectedInputs = ["HDMI1","HDMI2","HDMI5","AV1","HDMI1"]
     
     
