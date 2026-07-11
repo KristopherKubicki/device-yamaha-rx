@@ -1,4 +1,7 @@
 # Yamaha RX-V Device Type
+
+> **Legacy note:** This is an older SmartThings/Hubitat-era integration. It remains public for people maintaining classic Groovy SmartApps and device handlers, but it is not actively maintained for the current SmartThings platform.
+
 This is a networked receiver device type for SmartThings.  It allows you to change the input, adjust the volume, mute and turn off/standby your receiver via a SmartApp or the SmartThings UI.
 
 <img src='http://www.audiogurus.com/learn/wp-content/uploads/2014/06/Yamaha-RX-A1040-rear-panel.jpg'>
